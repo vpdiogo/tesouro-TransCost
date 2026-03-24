@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="section-title" style="margin-top:0.5rem;">Visão Geral dos Custos Federais</h1>
+
+{% if total_geral == 0 %}
+<div class="empty-state">
+    <p>Nenhum dado ingerido ainda.</p>
+    <p>Execute: <code>python manage.py ingest_costs</code></p>
+</div>
+{% else %}
+
+<div class="cards">
+    <div class="card">
+        <h3>Custo Total</h3>
+        <div class="value">R$ {{ total_geral|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="card">
+        <h3>Pessoal Ativo</h3>
+        <div class="value">R$ {{ total_pessoal_ativo|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="card">
+        <h3>Pessoal Inativo</h3>
+        <div class="value">R$ {{ total_pessoal_inativo|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="card">
+        <h3>Pensionistas</h3>
+        <div class="value">R$ {{ total_pensionistas|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="card">
+        <h3>Demais Custos</h3>
+        <div class="value">R$ {{ total_demais|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="card">
+        <h3>Órgãos</h3>
+        <div class="value green">{{ total_orgaos }}</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="chart-container">
+        <h2>Evolução dos Custos por Ano</h2>
+        <canvas id="chartCustoPorAno"></canvas>
+    </div>
+    <div class="chart-container">
+        <h2>Composição dos Custos</h2>
+        <canvas id="chartComposicao"></canvas>
+    </div>
+</div>
+
+<div class="chart-container">
+    <h2>Top 10 Órgãos por Custo (Pessoal Ativo)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Órgão</th>
+                <th style="text-align:right">Custo Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in top_orgaos %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.orgao__nome }}</td>
+                <td style="text-align:right">R$ {{ item.total|floatformat:0|intcomma }}</td>
+                <td><a href="{% url 'costs:orgao_detail' item.orgao__id %}" class="btn btn-primary" style="font-size:0.75rem;padding:0.25rem 0.75rem;">Detalhar</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if last_ingestion %}
+<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:1rem;">
+    Última ingestão: {{ last_ingestion.dataset }} em {{ last_ingestion.started_at|date:"d/m/Y H:i" }}
+    — {{ last_ingestion.records_created }} registros
+</p>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch cost evolution data
+    fetch('{% url "costs:custo_por_ano" %}')
+        .then(r => r.json())
+        .then(data => {
+            const allYears = new Set();
+            Object.values(data).forEach(series => series.forEach(d => allYears.add(d.ano)));
+            const years = [...allYears].sort();
+
+            const colors = ['#1a5276', '#2980b9', '#27ae60', '#e67e22', '#e74c3c', '#8e44ad'];
+            const datasets = Object.entries(data).map(([label, series], i) => ({
+                label: label,
+                data: years.map(y => {
+                    const match = series.find(d => d.ano === y);
+                    return match ? match.total : 0;
+                }),
+                backgroundColor: colors[i % colors.length],
+                borderColor: colors[i % colors.length],
+                borderWidth: 1,
+            }));
+
+            new Chart(document.getElementById('chartCustoPorAno'), {
+                type: 'bar',
+                data: { labels: years, datasets: datasets },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        x: { stacked: true },
+                        y: {
+                            stacked: true,
+                            ticks: {
+                                callback: v => 'R$ ' + (v / 1e9).toFixed(1) + 'B'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    // Fetch composition data
+    fetch('{% url "costs:custo_por_categoria" %}')
+        .then(r => r.json())
+        .then(data => {
+            const cats = data.categories.filter(c => c.total > 0);
+            new Chart(document.getElementById('chartComposicao'), {
+                type: 'doughnut',
+                data: {
+                    labels: cats.map(c => c.categoria),
+                    datasets: [{
+                        data: cats.map(c => c.total),
+                        backgroundColor: ['#1a5276', '#2980b9', '#27ae60', '#e67e22', '#e74c3c', '#8e44ad'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const v = ctx.raw;
+                                    return ctx.label + ': R$ ' + (v / 1e9).toFixed(2) + 'B';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+});
+</script>
+{% endblock %}

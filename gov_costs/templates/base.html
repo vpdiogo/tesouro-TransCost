@@ -1,0 +1,128 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TransCost{% endblock %} — Raio-X dos Custos Federais</title>
+    <style>
+        :root {
+            --primary: #1a5276;
+            --primary-light: #2980b9;
+            --secondary: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #dee2e6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        nav {
+            background: var(--primary);
+            color: white;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        nav .brand {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            margin-right: 2rem;
+        }
+        nav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        nav a:hover { background: rgba(255,255,255,0.1); color: white; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+        .card h3 { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+        .card .value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .card .value.green { color: var(--secondary); }
+        .card .value.red { color: var(--danger); }
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .chart-container h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg); font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; }
+        tr:hover { background: #f1f5f9; }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-danger { background: #fde8e8; color: var(--danger); }
+        .badge-warning { background: #fef3cd; color: #856404; }
+        .badge-success { background: #d4edda; color: #155724; }
+        a.btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-light); }
+        select, input[type="number"] {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            nav { flex-wrap: wrap; height: auto; padding: 0.5rem 1rem; }
+        }
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
+        .empty-state p { font-size: 1.1rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'costs:dashboard' %}" class="brand">TransCost</a>
+        <a href="{% url 'costs:dashboard' %}">Dashboard</a>
+        <a href="{% url 'costs:comparar' %}">Comparar</a>
+        <a href="{% url 'costs:anomalias' %}">Anomalias</a>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

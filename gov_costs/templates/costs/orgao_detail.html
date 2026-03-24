@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ orgao.nome }}{% endblock %}
+
+{% block content %}
+<h1 class="section-title" style="margin-top:0.5rem;">{{ orgao.nome }}</h1>
+<p style="color:var(--text-muted);margin-bottom:1.5rem;">Código: {{ orgao.codigo }}</p>
+
+<div class="cards">
+    <div class="card">
+        <h3>Pessoal Ativo</h3>
+        <div class="value">R$ {{ custo_ativo|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="card">
+        <h3>Pessoal Inativo</h3>
+        <div class="value">R$ {{ custo_inativo|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="card">
+        <h3>Pensionistas</h3>
+        <div class="value">R$ {{ custo_pensionista|floatformat:0|intcomma }}</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="chart-container">
+        <h2>Evolução dos Custos por Ano</h2>
+        <canvas id="chartEvolucao"></canvas>
+    </div>
+    <div class="chart-container">
+        <h2>Força de Trabalho por Ano</h2>
+        <canvas id="chartFT"></canvas>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="chart-container">
+        <h2>Proporção Ativo / Inativo / Pensionista</h2>
+        <canvas id="chartProporcao"></canvas>
+    </div>
+    <div class="chart-container">
+        <h2>Custo por Escolaridade</h2>
+        {% if por_escolaridade %}
+        <table>
+            <thead><tr><th>Escolaridade</th><th style="text-align:right">Custo</th><th style="text-align:right">Qtd</th></tr></thead>
+            <tbody>
+            {% for item in por_escolaridade %}
+            <tr>
+                <td>{{ item.escolaridade }}</td>
+                <td style="text-align:right">R$ {{ item.total|floatformat:0|intcomma }}</td>
+                <td style="text-align:right">{{ item.qtd|intcomma }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color:var(--text-muted)">Sem dados de escolaridade.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if por_faixa_etaria %}
+<div class="chart-container">
+    <h2>Distribuição por Faixa Etária</h2>
+    <canvas id="chartFaixaEtaria"></canvas>
+</div>
+{% endif %}
+
+<p style="margin-top:1rem;"><a href="{% url 'costs:dashboard' %}" class="btn btn-primary">Voltar ao Dashboard</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const custoData = {{ custo_por_ano|safe }};
+    const ftData = {{ ft_por_ano|safe }};
+
+    // Cost evolution
+    new Chart(document.getElementById('chartEvolucao'), {
+        type: 'line',
+        data: {
+            labels: custoData.map(d => d.ano),
+            datasets: [{
+                label: 'Custo Total',
+                data: custoData.map(d => d.total),
+                borderColor: '#1a5276',
+                backgroundColor: 'rgba(26,82,118,0.1)',
+                fill: true,
+                tension: 0.3,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => 'R$ ' + (v / 1e9).toFixed(1) + 'B' } } }
+        }
+    });
+
+    // Workforce
+    new Chart(document.getElementById('chartFT'), {
+        type: 'bar',
+        data: {
+            labels: ftData.map(d => d.ano),
+            datasets: [{
+                label: 'Força de Trabalho',
+                data: ftData.map(d => d.total),
+                backgroundColor: '#27ae60',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => v.toLocaleString('pt-BR') } } }
+        }
+    });
+
+    // Proportion pie
+    const propData = [
+        {{ custo_ativo|floatformat:0 }},
+        {{ custo_inativo|floatformat:0 }},
+        {{ custo_pensionista|floatformat:0 }}
+    ];
+    new Chart(document.getElementById('chartProporcao'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Ativo', 'Inativo', 'Pensionista'],
+            datasets: [{ data: propData, backgroundColor: ['#1a5276', '#e67e22', '#e74c3c'] }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    {% if por_faixa_etaria %}
+    const faixaData = [
+        {% for item in por_faixa_etaria %}
+        { label: "{{ item.faixa_etaria }}", value: {{ item.qtd }} },
+        {% endfor %}
+    ];
+    new Chart(document.getElementById('chartFaixaEtaria'), {
+        type: 'bar',
+        data: {
+            labels: faixaData.map(d => d.label),
+            datasets: [{
+                label: 'Servidores',
+                data: faixaData.map(d => d.value),
+                backgroundColor: '#2980b9',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => v.toLocaleString('pt-BR') } } }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

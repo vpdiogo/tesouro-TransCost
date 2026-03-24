@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Comparar Órgãos{% endblock %}
+
+{% block content %}
+<h1 class="section-title" style="margin-top:0.5rem;">Comparar Órgãos</h1>
+
+<form method="get" style="margin-bottom:1.5rem;">
+    <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Selecione os órgãos para comparar:</label>
+    <select name="orgao" multiple size="6" style="width:100%;max-width:500px;margin-bottom:1rem;">
+        {% for o in orgaos %}
+        <option value="{{ o.id }}" {% if o.id|stringformat:"s" in selected_orgaos %}selected{% endif %}>{{ o.nome }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <button type="submit" class="btn btn-primary" style="border:none;cursor:pointer;">Comparar</button>
+</form>
+
+{% if comparison_data %}
+<div class="chart-container">
+    <h2>Evolução Comparativa — Pessoal Ativo</h2>
+    <canvas id="chartComparar"></canvas>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if comparison_data %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const data = {{ comparison_data|safe }};
+    const colors = ['#1a5276', '#e74c3c', '#27ae60', '#e67e22', '#8e44ad', '#2980b9'];
+
+    const allYears = new Set();
+    data.forEach(org => org.data.forEach(d => allYears.add(d.ano)));
+    const years = [...allYears].sort();
+
+    const datasets = data.map((org, i) => ({
+        label: org.nome,
+        data: years.map(y => {
+            const match = org.data.find(d => d.ano === y);
+            return match ? match.total : null;
+        }),
+        borderColor: colors[i % colors.length],
+        backgroundColor: 'transparent',
+        tension: 0.3,
+        spanGaps: true,
+    }));
+
+    new Chart(document.getElementById('chartComparar'), {
+        type: 'line',
+        data: { labels: years, datasets: datasets },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { ticks: { callback: v => 'R$ ' + (v / 1e9).toFixed(1) + 'B' } } }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

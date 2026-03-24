@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+*.pyc
+__pycache__
+.venv
+*.egg-info
+.mypy_cache
+.pytest_cache
+htmlcov

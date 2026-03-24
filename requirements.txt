@@ -1,0 +1,7 @@
+django>=5.1,<5.2
+psycopg2-binary>=2.9
+gunicorn>=22.0
+celery>=5.4
+django-celery-beat>=2.6
+redis>=5.0
+requests>=2.31

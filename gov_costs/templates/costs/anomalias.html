@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Anomalias{% endblock %}
+
+{% block content %}
+<h1 class="section-title" style="margin-top:0.5rem;">Detecção de Anomalias</h1>
+<p style="color:var(--text-muted);margin-bottom:1.5rem;">
+    Órgãos cujo custo no último ano desvia mais de 2 desvios padrão da média histórica (Z-Score).
+</p>
+
+{% if anomalias %}
+<div class="chart-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Órgão</th>
+                <th>Ano</th>
+                <th style="text-align:right">Custo</th>
+                <th style="text-align:right">Média Histórica</th>
+                <th style="text-align:center">Z-Score</th>
+                <th style="text-align:center">Tipo</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in anomalias %}
+            <tr>
+                <td>{{ a.orgao.nome }}</td>
+                <td>{{ a.ano }}</td>
+                <td style="text-align:right">R$ {{ a.custo|floatformat:0|intcomma }}</td>
+                <td style="text-align:right">R$ {{ a.media|floatformat:0|intcomma }}</td>
+                <td style="text-align:center">
+                    <strong>{{ a.z_score }}</strong>
+                </td>
+                <td style="text-align:center">
+                    {% if a.tipo == "ACIMA" %}
+                    <span class="badge badge-danger">ACIMA</span>
+                    {% else %}
+                    <span class="badge badge-warning">ABAIXO</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'costs:orgao_detail' a.orgao.pk %}" class="btn btn-primary" style="font-size:0.75rem;padding:0.25rem 0.75rem;">Ver</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <p>Nenhuma anomalia detectada.</p>
+    <p>Certifique-se de que os dados foram ingeridos e que há ao menos 3 anos de dados por órgão.</p>
+</div>
+{% endif %}
+{% endblock %}
