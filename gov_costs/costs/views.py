@@ -3,10 +3,10 @@ import statistics
 from collections import defaultdict
 from decimal import Decimal
 
-from django.db.models import Sum, Count, F
+from django.db.models import Sum
 from django.http import JsonResponse
-from django.views.generic import TemplateView, DetailView
 from django.views.decorators.cache import cache_page
+from django.views.generic import DetailView, TemplateView
 
 from .models import (
     DemaisCustos,
@@ -35,14 +35,16 @@ class DashboardView(TemplateView):
         ctx["total_depreciacao"] = Depreciacao.objects.aggregate(t=Sum("custo"))["t"] or 0
         ctx["total_transferencias"] = Transferencia.objects.aggregate(t=Sum("custo"))["t"] or 0
 
-        ctx["total_geral"] = sum([
-            ctx["total_pessoal_ativo"],
-            ctx["total_pessoal_inativo"],
-            ctx["total_pensionistas"],
-            ctx["total_demais"],
-            ctx["total_depreciacao"],
-            ctx["total_transferencias"],
-        ])
+        ctx["total_geral"] = sum(
+            [
+                ctx["total_pessoal_ativo"],
+                ctx["total_pessoal_inativo"],
+                ctx["total_pensionistas"],
+                ctx["total_demais"],
+                ctx["total_depreciacao"],
+                ctx["total_transferencias"],
+            ]
+        )
 
         # Available years
         years = set()
@@ -53,10 +55,7 @@ class DashboardView(TemplateView):
 
         # Top 10 órgãos by cost
         ctx["top_orgaos"] = (
-            PessoalAtivo.objects
-            .values("orgao__id", "orgao__nome")
-            .annotate(total=Sum("custo"))
-            .order_by("-total")[:10]
+            PessoalAtivo.objects.values("orgao__id", "orgao__nome").annotate(total=Sum("custo")).order_by("-total")[:10]
         )
 
         # Last ingestion
@@ -94,14 +93,9 @@ class OrgaoDetailView(DetailView):
 
         # Workforce by year
         ft_por_ano = (
-            PessoalAtivo.objects.filter(orgao=orgao)
-            .values("ano")
-            .annotate(total=Sum("forca_trabalho"))
-            .order_by("ano")
+            PessoalAtivo.objects.filter(orgao=orgao).values("ano").annotate(total=Sum("forca_trabalho")).order_by("ano")
         )
-        ctx["ft_por_ano"] = json.dumps(
-            [{"ano": r["ano"], "total": r["total"]} for r in ft_por_ano if r["ano"] > 0]
-        )
+        ctx["ft_por_ano"] = json.dumps([{"ano": r["ano"], "total": r["total"]} for r in ft_por_ano if r["ano"] > 0])
 
         # Demographics breakdown
         ctx["por_escolaridade"] = list(
@@ -149,15 +143,14 @@ class CompararView(TemplateView):
             comparison = []
             for orgao in orgaos:
                 data = (
-                    PessoalAtivo.objects.filter(orgao=orgao)
-                    .values("ano")
-                    .annotate(total=Sum("custo"))
-                    .order_by("ano")
+                    PessoalAtivo.objects.filter(orgao=orgao).values("ano").annotate(total=Sum("custo")).order_by("ano")
                 )
-                comparison.append({
-                    "nome": orgao.nome,
-                    "data": [{"ano": r["ano"], "total": float(r["total"])} for r in data if r["ano"] > 0],
-                })
+                comparison.append(
+                    {
+                        "nome": orgao.nome,
+                        "data": [{"ano": r["ano"], "total": float(r["total"])} for r in data if r["ano"] > 0],
+                    }
+                )
             ctx["comparison_data"] = json.dumps(comparison)
             ctx["selected_orgaos"] = orgao_ids
 
@@ -196,20 +189,23 @@ class AnomaliasView(TemplateView):
             z_score = (float(latest["total"]) - mean) / stdev
 
             if abs(z_score) > 2:
-                anomalias.append({
-                    "orgao": orgao,
-                    "ano": latest["ano"],
-                    "custo": latest["total"],
-                    "media": Decimal(str(round(mean, 2))),
-                    "z_score": round(z_score, 2),
-                    "tipo": "ACIMA" if z_score > 0 else "ABAIXO",
-                })
+                anomalias.append(
+                    {
+                        "orgao": orgao,
+                        "ano": latest["ano"],
+                        "custo": latest["total"],
+                        "media": Decimal(str(round(mean, 2))),
+                        "z_score": round(z_score, 2),
+                        "tipo": "ACIMA" if z_score > 0 else "ABAIXO",
+                    }
+                )
 
         ctx["anomalias"] = sorted(anomalias, key=lambda x: abs(x["z_score"]), reverse=True)
         return ctx
 
 
 # JSON API endpoints for charts
+
 
 @cache_page(60 * 15)
 def custo_por_ano_json(request):
@@ -223,12 +219,7 @@ def custo_por_ano_json(request):
         (Depreciacao, "Depreciação"),
         (Transferencia, "Transferências"),
     ]:
-        data = (
-            model.objects.filter(ano__gt=0)
-            .values("ano")
-            .annotate(total=Sum("custo"))
-            .order_by("ano")
-        )
+        data = model.objects.filter(ano__gt=0).values("ano").annotate(total=Sum("custo")).order_by("ano")
         result[label] = [{"ano": r["ano"], "total": float(r["total"])} for r in data]
 
     return JsonResponse(result)
@@ -263,11 +254,7 @@ def orgao_ranking_json(request):
     qs = PessoalAtivo.objects.all()
     if ano:
         qs = qs.filter(ano=int(ano))
-    ranking = (
-        qs.values("orgao__nome")
-        .annotate(total=Sum("custo"))
-        .order_by("-total")[:20]
-    )
+    ranking = qs.values("orgao__nome").annotate(total=Sum("custo")).order_by("-total")[:20]
     return JsonResponse({"ranking": [{"nome": r["orgao__nome"], "total": float(r["total"])} for r in ranking]})
 
 

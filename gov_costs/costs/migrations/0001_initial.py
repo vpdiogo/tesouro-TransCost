@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = []
@@ -91,11 +90,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "Depreciação",
                 "verbose_name_plural": "Depreciações",
-                "indexes": [
-                    models.Index(
-                        fields=["ano", "orgao"], name="costs_depre_ano_303f08_idx"
-                    )
-                ],
+                "indexes": [models.Index(fields=["ano", "orgao"], name="costs_depre_ano_303f08_idx")],
             },
         ),
         migrations.CreateModel(
@@ -137,11 +132,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "Demais Custos",
                 "verbose_name_plural": "Demais Custos",
-                "indexes": [
-                    models.Index(
-                        fields=["ano", "orgao"], name="costs_demai_ano_8b3c0e_idx"
-                    )
-                ],
+                "indexes": [models.Index(fields=["ano", "orgao"], name="costs_demai_ano_8b3c0e_idx")],
             },
         ),
         migrations.CreateModel(
@@ -193,11 +184,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "Pensionista",
                 "verbose_name_plural": "Pensionistas",
-                "indexes": [
-                    models.Index(
-                        fields=["ano", "orgao"], name="costs_pensi_ano_96720a_idx"
-                    )
-                ],
+                "indexes": [models.Index(fields=["ano", "orgao"], name="costs_pensi_ano_96720a_idx")],
             },
         ),
         migrations.CreateModel(
@@ -249,11 +236,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "Pessoal Ativo",
                 "verbose_name_plural": "Pessoal Ativo",
-                "indexes": [
-                    models.Index(
-                        fields=["ano", "orgao"], name="costs_pesso_ano_255efb_idx"
-                    )
-                ],
+                "indexes": [models.Index(fields=["ano", "orgao"], name="costs_pesso_ano_255efb_idx")],
             },
         ),
         migrations.CreateModel(
@@ -305,11 +288,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "Pessoal Inativo",
                 "verbose_name_plural": "Pessoal Inativo",
-                "indexes": [
-                    models.Index(
-                        fields=["ano", "orgao"], name="costs_pesso_ano_0f27d0_idx"
-                    )
-                ],
+                "indexes": [models.Index(fields=["ano", "orgao"], name="costs_pesso_ano_0f27d0_idx")],
             },
         ),
         migrations.CreateModel(
@@ -355,11 +334,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "Transferência",
                 "verbose_name_plural": "Transferências",
-                "indexes": [
-                    models.Index(
-                        fields=["ano", "orgao"], name="costs_trans_ano_f34739_idx"
-                    )
-                ],
+                "indexes": [models.Index(fields=["ano", "orgao"], name="costs_trans_ano_f34739_idx")],
             },
         ),
     ]

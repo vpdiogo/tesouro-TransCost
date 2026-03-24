@@ -1,25 +1,20 @@
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
 from django.urls import reverse
 
-from costs.client import TesouroClient, DATASETS
+from costs.client import TesouroClient
 from costs.management.commands.ingest_costs import (
+    extract_year_month,
     parse_decimal,
     parse_int,
-    extract_year_month,
     record_to_model_kwargs,
 )
 from costs.models import (
-    DemaisCustos,
-    Depreciacao,
     IngestionLog,
     Orgao,
-    Pensionista,
     PessoalAtivo,
-    PessoalInativo,
-    Transferencia,
 )
 
 
@@ -81,8 +76,12 @@ class PessoalAtivoModelTest(TestCase):
     def test_str(self):
         orgao = Orgao.objects.create(codigo="001", nome="Ministério da Fazenda")
         pa = PessoalAtivo.objects.create(
-            periodo="2023-01", ano=2023, mes=1, orgao=orgao,
-            forca_trabalho=100, custo=Decimal("1000000.00"),
+            periodo="2023-01",
+            ano=2023,
+            mes=1,
+            orgao=orgao,
+            forca_trabalho=100,
+            custo=Decimal("1000000.00"),
         )
         self.assertIn("Ministério da Fazenda", str(pa))
 
@@ -166,7 +165,10 @@ class DashboardViewTest(TestCase):
     def test_dashboard_with_data(self):
         orgao = Orgao.objects.create(codigo="001", nome="Teste")
         PessoalAtivo.objects.create(
-            periodo="2023-01", ano=2023, mes=1, orgao=orgao,
+            periodo="2023-01",
+            ano=2023,
+            mes=1,
+            orgao=orgao,
             custo=Decimal("1000000"),
         )
         response = self.client.get(reverse("costs:dashboard"))
@@ -178,8 +180,12 @@ class OrgaoDetailViewTest(TestCase):
     def test_detail_page(self):
         orgao = Orgao.objects.create(codigo="001", nome="Teste")
         PessoalAtivo.objects.create(
-            periodo="2023-01", ano=2023, mes=1, orgao=orgao,
-            custo=Decimal("1000000"), forca_trabalho=100,
+            periodo="2023-01",
+            ano=2023,
+            mes=1,
+            orgao=orgao,
+            custo=Decimal("1000000"),
+            forca_trabalho=100,
         )
         response = self.client.get(reverse("costs:orgao_detail", args=[orgao.pk]))
         self.assertEqual(response.status_code, 200)
@@ -201,7 +207,11 @@ class CompararViewTest(TestCase):
     def test_with_selection(self):
         orgao = Orgao.objects.create(codigo="001", nome="Teste")
         PessoalAtivo.objects.create(
-            periodo="2023-01", ano=2023, mes=1, orgao=orgao, custo=Decimal("1000000"),
+            periodo="2023-01",
+            ano=2023,
+            mes=1,
+            orgao=orgao,
+            custo=Decimal("1000000"),
         )
         response = self.client.get(reverse("costs:comparar"), {"orgao": [orgao.id]})
         self.assertEqual(response.status_code, 200)
