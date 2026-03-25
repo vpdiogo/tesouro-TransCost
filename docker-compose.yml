@@ -28,7 +28,7 @@ services:
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: uv run python manage.py runserver 0.0.0.0:8000
     env_file: .env
     volumes:
       - .:/app
@@ -42,7 +42,7 @@ services:
 
   celery-worker:
     build: .
-    command: celery -A gov_costs worker -l info
+    command: uv run celery -A gov_costs worker -l info
     env_file: .env
     volumes:
       - .:/app
@@ -54,7 +54,7 @@ services:
 
   celery-beat:
     build: .
-    command: celery -A gov_costs beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: uv run celery -A gov_costs beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     env_file: .env
     volumes:
       - .:/app

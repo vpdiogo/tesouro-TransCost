@@ -30,6 +30,7 @@ Fonte: [Tesouro Transparente — CKAN](https://www.tesourotransparente.gov.br/ck
 - **Frontend:** Django Templates, Chart.js
 - **Infra:** Docker Compose
 - **CI:** GitHub Actions (testes + lint com ruff)
+- **Package manager:** uv
 
 ## Quick Start
 
@@ -41,10 +42,10 @@ cp .env.example .env
 docker compose up -d
 
 # 3. Rodar migrações
-docker compose exec web python manage.py migrate
+docker compose exec web uv run python manage.py migrate
 
 # 4. Ingerir dados (todos os datasets)
-docker compose exec web python manage.py ingest_costs
+docker compose exec web uv run python manage.py ingest_costs
 
 # 5. Acessar
 open http://localhost:8000
@@ -53,25 +54,25 @@ open http://localhost:8000
 ## Desenvolvimento Local (sem Docker)
 
 ```bash
-# Requisitos: Python 3.12, PostgreSQL, Redis
-pip install -r requirements.txt
+# Requisitos: Python 3.12, PostgreSQL, Redis, uv
+uv sync
 cd gov_costs
-python manage.py migrate
-python manage.py ingest_costs --dataset pessoal_ativo
-python manage.py runserver
+uv run python manage.py migrate
+uv run python manage.py ingest_costs --dataset pessoal_ativo
+uv run python manage.py runserver
 ```
 
 ## Ingestão de Dados
 
 ```bash
 # Todos os datasets
-python manage.py ingest_costs
+uv run python manage.py ingest_costs
 
 # Dataset específico
-python manage.py ingest_costs --dataset pessoal_ativo
+uv run python manage.py ingest_costs --dataset pessoal_ativo
 
 # Limpar e reingerir
-python manage.py ingest_costs --dataset pessoal_ativo --clear
+uv run python manage.py ingest_costs --dataset pessoal_ativo --clear
 ```
 
 Datasets disponíveis: `pessoal_ativo`, `pessoal_inativo`, `pensionista`, `demais_custos`, `depreciacao`, `transferencia`
@@ -80,7 +81,7 @@ Datasets disponíveis: `pessoal_ativo`, `pessoal_inativo`, `pensionista`, `demai
 
 ```bash
 cd gov_costs
-DJANGO_SETTINGS_MODULE=gov_costs.settings_test python manage.py test costs -v2
+DJANGO_SETTINGS_MODULE=gov_costs.settings_test uv run python manage.py test costs -v2
 ```
 
 ## Celery (ingestão automática)
@@ -89,8 +90,8 @@ O Celery Beat pode ser configurado via Django Admin para agendar ingestões peri
 
 ```bash
 # Worker
-celery -A gov_costs worker -l info
+uv run celery -A gov_costs worker -l info
 
 # Beat (scheduler)
-celery -A gov_costs beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+uv run celery -A gov_costs beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 ```

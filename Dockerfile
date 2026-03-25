@@ -5,12 +5,14 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev gcc \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
 
 COPY . .
 
@@ -18,4 +20,4 @@ WORKDIR /app/gov_costs
 
 EXPOSE 8000
 
-CMD ["gunicorn", "gov_costs.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["uv", "run", "gunicorn", "gov_costs.wsgi:application", "--bind", "0.0.0.0:8000"]

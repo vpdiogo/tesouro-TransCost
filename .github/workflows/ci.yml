@@ -39,35 +39,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv sync --frozen
 
       - name: Run migrations
         working-directory: gov_costs
-        run: python manage.py migrate --noinput
+        run: uv run python manage.py migrate --noinput
 
       - name: Run tests
         working-directory: gov_costs
-        run: python manage.py test costs -v2
+        run: uv run python manage.py test costs -v2
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
 
-      - name: Install ruff
-        run: pip install ruff
+      - name: Install dependencies
+        run: uv sync --frozen --only-group dev
 
       - name: Check formatting
-        run: ruff format --check .
+        run: uv run ruff format --check .
 
       - name: Lint
-        run: ruff check .
+        run: uv run ruff check .
