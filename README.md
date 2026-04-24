@@ -1,15 +1,12 @@
 # Tesouro TransCost
 
+[![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
+
 Dashboard de visualização de custos por itens de pessoal ativo do Governo Federal Brasileiro, com dados do [Tesouro Transparente](https://www.tesourotransparente.gov.br/ckan/dataset/custos-por-itens-de-custos-pessoal-ativo).
-
-## Stack
-
-- **[Next.js 16](https://nextjs.org/)** — App Router, Server Components
-- **[TypeScript](https://www.typescriptlang.org/)**
-- **[Supabase](https://supabase.com/)** — PostgreSQL gerenciado, cache persistente dos dados
-- **[Recharts](https://recharts.org/)** — gráficos de evolução mensal e top itens
-- **[Tailwind CSS](https://tailwindcss.com/)**
-- **[Vercel](https://vercel.com/)** — deploy e hospedagem
 
 ## Rodando localmente
 
