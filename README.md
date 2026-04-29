@@ -6,7 +6,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
-Dashboard de visualização de custos por itens de pessoal ativo do Governo Federal Brasileiro, com dados do [Tesouro Transparente](https://www.tesourotransparente.gov.br/ckan/dataset/custos-por-itens-de-custos-pessoal-ativo).
+Dashboard de visualização de custos de pessoal ativo do Governo Federal Brasileiro, com dados do [API Data Lake do Tesouro Nacional](https://apidatalake.tesouro.gov.br/docs/custos/).
 
 ## Rodando localmente
 
@@ -30,15 +30,37 @@ Acesse [http://localhost:3000](http://localhost:3000).
 
 ## Configurando o Supabase
 
+### Criando o projeto
+
 1. Crie um projeto em [supabase.com](https://supabase.com)
-2. No **SQL Editor**, execute o conteúdo de [`supabase/schema.sql`](./supabase/schema.sql)
-3. Copie a **Project URL** e a **anon key** em `Settings → API`
-4. Cole no `.env.local`:
+2. Em `Project Settings → API Keys`, copie a **Project URL** e a **anon key** (aba "Legacy anon, service_role API keys")
+3. Cole no `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 ```
+
+### Aplicando o schema
+
+Via **Supabase CLI** (recomendado):
+
+```bash
+# Instale o CLI (Linux)
+sudo dpkg -i supabase_<version>_linux_amd64.deb
+# ou: curl -sSL https://supabase.com/install.sh | bash
+
+# Autentique e linke ao projeto
+supabase login
+supabase link --project-ref <project-ref>
+
+# Aplique o schema no banco remoto
+supabase db query --linked --file supabase/schema.sql
+```
+
+O `project-ref` é o ID do projeto na URL do dashboard: `supabase.com/dashboard/project/<project-ref>`.
+
+Via **SQL Editor** no dashboard: cole e execute o conteúdo de [`supabase/schema.sql`](./supabase/schema.sql).
 
 ## Deploy na Vercel
 
@@ -50,5 +72,5 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 
 ## Fonte dos dados
 
-API pública do Tesouro Transparente — **Custos por Itens de Custos: Pessoal Ativo**  
-`https://www.tesourotransparente.gov.br/ckan/dataset/custos-por-itens-de-custos-pessoal-ativo`
+API Data Lake do Tesouro Nacional — **Custos de Pessoal Ativo**  
+`https://apidatalake.tesouro.gov.br/ords/custos/tt/pessoal_ativo`
