@@ -1,9 +1,7 @@
 import type { TesouroApiRecord, TesouroApiResponse, CustoItem } from "@/types";
 
 const TESOURO_API_BASE =
-  "https://www.tesourotransparente.gov.br/ckan/api/3/action/datastore_search";
-
-const RESOURCE_ID = "b2dd03ee-3960-4c49-99bf-7b23c7fe1eb0";
+  "https://apidatalake.tesouro.gov.br/ords/custos/tt/pessoal_ativo";
 
 export async function fetchTesouroData(
   ano?: number,
@@ -11,13 +9,12 @@ export async function fetchTesouroData(
   offset = 0
 ): Promise<TesouroApiRecord[]> {
   const params = new URLSearchParams({
-    resource_id: RESOURCE_ID,
     limit: String(limit),
     offset: String(offset),
   });
 
   if (ano) {
-    params.set("filters", JSON.stringify({ ID_ANO_LANC: String(ano) }));
+    params.set("an_lanc", String(ano));
   }
 
   const url = `${TESOURO_API_BASE}?${params.toString()}`;
@@ -28,18 +25,18 @@ export async function fetchTesouroData(
   }
 
   const data: TesouroApiResponse = await res.json();
-  return data.result.records;
+  return data.items;
 }
 
 export function mapApiRecordToCustoItem(
   record: TesouroApiRecord
 ): Omit<CustoItem, "id" | "created_at"> {
   return {
-    ano: parseInt(record.ID_ANO_LANC, 10),
-    mes: parseInt(record.ID_MES_LANC, 10),
-    item_custo: record.NO_ITEM_INFORMACAO,
-    orgao_superior_nome: record.NO_ORGAO_SUPERIOR,
-    orgao_subordinado_nome: record.NO_ORGAO_SUBORDINADO,
-    valor: parseFloat(record.VL_CUSTO.replace(",", ".")),
+    ano: record.an_lanc,
+    mes: record.me_lanc,
+    item_custo: record.ds_area_atuacao,
+    orgao_superior_nome: record.ds_organizacao_n1,
+    orgao_subordinado_nome: record.ds_organizacao_n2,
+    valor: record.va_custo_de_pessoal,
   };
 }

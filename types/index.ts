@@ -21,21 +21,20 @@ export interface CustoMensal {
 }
 
 export interface TesouroApiResponse {
-  result: {
-    records: TesouroApiRecord[];
-    total: number;
-    offset: number;
-    limit: number;
-  };
+  items: TesouroApiRecord[];
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  count: number;
 }
 
 export interface TesouroApiRecord {
-  ID_ANO_LANC: string;
-  ID_MES_LANC: string;
-  NO_ITEM_INFORMACAO: string;
-  NO_ORGAO_SUPERIOR: string;
-  NO_ORGAO_SUBORDINADO: string;
-  VL_CUSTO: string;
+  an_lanc: number;
+  me_lanc: number;
+  ds_area_atuacao: string;
+  ds_organizacao_n1: string;
+  ds_organizacao_n2: string;
+  va_custo_de_pessoal: number;
 }
 
 export interface DashboardStats {
