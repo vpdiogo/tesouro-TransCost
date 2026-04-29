@@ -1,95 +1,54 @@
-# tesouro-TransCost
+# Tesouro TransCost
 
-Este projeto utiliza Django, PostgreSQL e Elasticsearch para consultar dados da API pública do governo federal https://www.tesourotransparente.gov.br/ckan/dataset/custos-por-itens-de-custos-pessoal-ativo, para extrair dados e criar visualizações de dados de custo e despesas do governo.
+[![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
-## Requisitos
+Dashboard de visualização de custos por itens de pessoal ativo do Governo Federal Brasileiro, com dados do [Tesouro Transparente](https://www.tesourotransparente.gov.br/ckan/dataset/custos-por-itens-de-custos-pessoal-ativo).
 
-- Python 3.12
-- PostgreSQL
-- pipenv
+## Rodando localmente
 
-## Passos de Instalação
-
-### 1. Instalar Dependências
-
-Certifique-se de que o Python 3.12 está instalado no seu sistema. Se não estiver, você pode instalá-lo usando os seguintes comandos:
+**Pré-requisitos:** Node.js 18+
 
 ```bash
-sudo apt update
-sudo apt install python3.12 python3.12-venv python3.12-dev
+# 1. Clone e instale dependências
+git clone https://github.com/vpdiogo/tesouro-TransCost.git
+cd tesouro-TransCost
+npm install
+
+# 2. Configure as variáveis de ambiente
+cp .env.local.example .env.local
+# edite .env.local com suas credenciais do Supabase
+
+# 3. Inicie o servidor de desenvolvimento
+npm run dev
 ```
 
-### 2. Configurar o Ambiente Virtual
+Acesse [http://localhost:3000](http://localhost:3000).
 
-No diretório do seu projeto, execute os seguintes comandos para criar e ativar um ambiente virtual com Python 3.12 usando `pipenv`:
+## Configurando o Supabase
 
-```bash
-export PIPENV_VENV_IN_PROJECT=1
-pipenv --python 3.12
-pipenv install django psycopg2-binary
-pipenv shell
+1. Crie um projeto em [supabase.com](https://supabase.com)
+2. No **SQL Editor**, execute o conteúdo de [`supabase/schema.sql`](./supabase/schema.sql)
+3. Copie a **Project URL** e a **anon key** em `Settings → API`
+4. Cole no `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 ```
 
-### 3. Configurar o Banco de Dados PostgreSQL
+## Deploy na Vercel
 
-Acesse o PostgreSQL e crie o banco de dados e o usuário:
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
-```bash
-sudo -u postgres psql
-```
+1. Importe o repositório na Vercel
+2. Adicione as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+3. Deploy automático a cada push na `main`
 
-No prompt do PostgreSQL, execute os seguintes comandos (substitua `nome_do_banco_de_dados`, `seu_usuario` e `sua_senha` pelas suas credenciais):
+## Fonte dos dados
 
-```sql
-CREATE DATABASE gov_costs;
-CREATE USER admin WITH PASSWORD 'XXXXXX';
-ALTER ROLE admin SET client_encoding TO 'utf8';
-ALTER ROLE admin SET default_transaction_isolation TO 'read committed';
-ALTER ROLE admin SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE gov_costs TO admin;
-\c gov_costs
-GRANT ALL PRIVILEGES ON SCHEMA public TO admin;
-\q
-```
-
-### 4. Configurar o Django
-
-No arquivo `settings.py` do seu projeto Django, configure o banco de dados PostgreSQL:
-
-```python
-# filepath: /.../tesouro-TransCost/gov_costs/gov_costs/settings.py
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gov_costs',
-        'USER': 'admin',
-        'PASSWORD': 'XXXXXX',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-```
-
-### 5. Migrar o Banco de Dados
-
-Execute as migrações iniciais do Django para configurar as tabelas padrão:
-
-```bash
-python manage.py migrate
-```
-
-### 6. Criar um Superusuário
-
-Crie um superusuário para acessar o admin do Django:
-
-```bash
-python manage.py createsuperuser
-```
-
-### 7. Executar o Servidor de Desenvolvimento
-
-Inicie o servidor de desenvolvimento do Django para verificar se tudo está funcionando corretamente:
-
-```bash
-python manage.py runserver
-```
+API pública do Tesouro Transparente — **Custos por Itens de Custos: Pessoal Ativo**  
+`https://www.tesourotransparente.gov.br/ckan/dataset/custos-por-itens-de-custos-pessoal-ativo`
